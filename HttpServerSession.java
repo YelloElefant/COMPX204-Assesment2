@@ -21,16 +21,12 @@ public class HttpServerSession extends Thread {
             String method = request[0];
             String fileRequested = request[1];
 
+            // get host request
+            String host = in.readLine().split(" ")[1].split(":")[0];
             String contentType = "text/html";
 
             if (fileRequested.equals("/")) {
                 fileRequested = "/index.html"; // default file
-            } else if (fileRequested.equals("/favicon.ico")) {
-                // return 404 for favicon
-                out.println("HTTP/1.1 404 Not Found");
-                out.println();
-                socket.close();
-                return;
             } else if (fileRequested.endsWith(".css")) {
                 contentType = "text/css";
             } else if (fileRequested.endsWith(".js")) {
@@ -41,10 +37,13 @@ public class HttpServerSession extends Thread {
                 contentType = "image/jpeg";
             } else if (fileRequested.endsWith(".gif")) {
                 contentType = "image/gif";
+            } else if (fileRequested.endsWith(".ico")) {
+                contentType = "image/x-icon";
+                fileRequested = "/picture.jpg";
             }
 
             // read in html file
-            File file = new File(fileRequested.substring(1));
+            File file = new File(host + fileRequested);
             FileInputStream fis = new FileInputStream(file);
             byte[] data = new byte[(int) file.length()];
             fis.read(data);
