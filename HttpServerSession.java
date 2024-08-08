@@ -40,6 +40,7 @@ public class HttpServerSession extends Thread {
             } else if (fileRequested.endsWith(".ico")) {
                 contentType = "image/x-icon";
                 fileRequested = "/picture.jpg";
+                host = "./";
             }
 
             // read in html file
