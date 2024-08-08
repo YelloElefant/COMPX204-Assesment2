@@ -56,6 +56,7 @@ public class HttpServerSession extends Thread {
 
             // send http body
             out.write(data);
+            out.flush();
 
             socket.close();
         } catch (FileNotFoundException e) {
