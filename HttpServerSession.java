@@ -2,8 +2,13 @@
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.NoSuchFileException;
 
+/**
+ * HttpServerSession class
+ * 
+ * This class is a thread that will handle the http request and send the
+ * response
+ */
 public class HttpServerSession extends Thread {
     private Socket socket;
 
@@ -11,11 +16,18 @@ public class HttpServerSession extends Thread {
         this.socket = socket;
     }
 
+    /**
+     * Run method for thread
+     * this method will handle the http request and send the response
+     * 
+     */
+    @Override
     public void run() {
         try {
             // create input and output streams
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintStream out = new PrintStream(socket.getOutputStream());
+            String responseCode = "200 OK";
 
             // read http request
             String line = in.readLine();
@@ -30,14 +42,12 @@ public class HttpServerSession extends Thread {
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
 
-            // change this to a switch statement
+            // check for specific files and re direct fileRequested
             if (fileRequested.equals("/")) {
                 fileRequested = "/index.html";
             } else if (fileRequested.equals("/favicon.ico")) {
                 fileRequested = "/picture.jpg";
             }
-
-            System.out.println(getHostName(clientIpAddress) + " Requested: " + host + fileRequested);
 
             // get file extension from fileRequested
             String fileExtension = fileRequested.substring(fileRequested.lastIndexOf(".") + 1);
@@ -45,15 +55,22 @@ public class HttpServerSession extends Thread {
             // get content type
             String contentType = getContentType(fileExtension);
 
-            // read in file
+            // set up file input stream
             File file = new File(host + fileRequested);
-            FileInputStream fis = new FileInputStream(file);
+            FileInputStream fis = null;
             byte[] data = new byte[(int) file.length()];
-            fis.read(data);
-            fis.close();
+
+            // read in file and change response code if error
+            try {
+                fis = new FileInputStream(file);
+                fis.read(data);
+                fis.close();
+            } catch (FileNotFoundException e) {
+                responseCode = "404 Not Found";
+            }
 
             // send http headers
-            out.println("HTTP/1.1 200 OK");
+            out.println("HTTP/1.1 " + responseCode);
             out.println("Content-Type: " + contentType);
             out.println("Content-Length: " + data.length);
             out.println();
@@ -63,29 +80,21 @@ public class HttpServerSession extends Thread {
             out.flush();
 
             socket.close();
-        } catch (FileNotFoundException e) {
-            try {
-                PrintStream out = new PrintStream(socket.getOutputStream());
-                out.println("HTTP/1.1 404 Not Found");
-                out.println();
-                socket.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        } catch (NoSuchFileException e) {
-            try {
-                PrintStream out = new PrintStream(socket.getOutputStream());
-                out.println("HTTP/1.1 415 Unsupported Media Type");
-                out.println();
-                socket.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+
+            // print request to console
+            System.out.println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
+                    + responseCode);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Get content type based on file extension
+     * 
+     * @param fileExtension file extension
+     * @return content type
+     */
     private String getContentType(String fileExtension) {
         return switch (fileExtension) {
             case "html" -> "text/html";
@@ -100,11 +109,22 @@ public class HttpServerSession extends Thread {
         };
     }
 
+    /**
+     * Get host name from ip address if possible
+     * if not possible will return ip address given
+     * if ip address is a loopback/localhost will return "localhost"
+     * 
+     * 
+     * @param ip ip address
+     * @return host name
+     */
     private String getHostName(String ip) {
+        // check for localhost or loopback
         if (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("127.0.0.1")) {
             return "localhost";
         }
 
+        // get host name from ip address if possible
         try {
             InetAddress inetAddress = InetAddress.getByName(ip);
             return inetAddress.getHostName().split("\\.")[0];
