@@ -13,17 +13,19 @@ public class HttpServerSession extends Thread {
 
     public void run() {
         try {
+            // create input and output streams
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintStream out = new PrintStream(socket.getOutputStream());
 
             // read http request
             String line = in.readLine();
             String[] request = line.split(" ");
-            String method = request[0];
+            // String method = request[0];
             String fileRequested = request[1];
 
             // get host request
-            String host = in.readLine().split(" ")[1].split(":")[0];
+            line = in.readLine();
+            String host = line.split(" ")[1].split(":")[0];
 
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
@@ -31,9 +33,11 @@ public class HttpServerSession extends Thread {
             // change this to a switch statement
             if (fileRequested.equals("/")) {
                 fileRequested = "/index.html";
+            } else if (fileRequested.equals("/favicon.ico")) {
+                fileRequested = "/picture.jpg";
             }
 
-            System.out.println(clientIpAddress + " Requested: " + fileRequested);
+            System.out.println(getHostName(clientIpAddress) + " Requested: " + host + fileRequested);
 
             // get file extension from fileRequested
             String fileExtension = fileRequested.substring(fileRequested.lastIndexOf(".") + 1);
@@ -94,5 +98,18 @@ public class HttpServerSession extends Thread {
             case "ico" -> "image/x-icon";
             default -> "error";
         };
+    }
+
+    private String getHostName(String ip) {
+        if (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("127.0.0.1")) {
+            return "localhost";
+        }
+
+        try {
+            InetAddress inetAddress = InetAddress.getByName(ip);
+            return inetAddress.getHostName().split("\\.")[0];
+        } catch (UnknownHostException e) {
+            return ip;
+        }
     }
 }
