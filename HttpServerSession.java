@@ -83,6 +83,7 @@ public class HttpServerSession extends Thread {
             out.println("HTTP/1.1 " + responseCode);
             out.println("Content-Type: " + contentType);
             out.println("Content-Length: " + data.length);
+            out.println("Server: YelloElefant-HttpServer");
             out.println();
 
             // send http body
