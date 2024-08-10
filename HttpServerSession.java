@@ -55,6 +55,7 @@ public class HttpServerSession extends Thread {
             if (fileRequested.equals("/")) {
                 fileRequested = "/index.html";
             } else if (fileRequested.equals("/favicon.ico")) {
+                host = ".";
                 fileRequested = "/picture.jpg";
             }
 
