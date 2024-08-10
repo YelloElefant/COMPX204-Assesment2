@@ -3,11 +3,27 @@
 import java.io.*;
 import java.net.*;
 
+/**
+ * HttpServer class
+ * 
+ * This class is the main class for the http server
+ * it will listen for connection on port 8080 and create a new thread for each
+ * connection/request
+ */
 public class HttpServer {
+    /**
+     * Main method for http server
+     * 
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         try {
+            // create server socket on port 8080
             ServerSocket server = new ServerSocket(8080);
             System.out.println("Listening for connection on port 8080 ....");
+
+            // listen for connection and create a new thread for each connection (accept all
+            // connections)
             while (true) {
                 Socket socket = server.accept();
                 HttpServerSession session = new HttpServerSession(socket);
