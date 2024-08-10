@@ -4,11 +4,15 @@ import java.io.*;
 import java.net.*;
 
 /**
- * HttpServer class
- * 
  * This class is the main class for the http server
  * it will listen for connection on port 8080 and create a new thread for each
  * connection/request
+ * 
+ * @see java.io
+ * @see java.net
+ * @see HttpServerSession
+ * @version 1.0
+ * @author YelloElefant
  */
 public class HttpServer {
     /**

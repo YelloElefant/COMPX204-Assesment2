@@ -4,14 +4,23 @@ import java.io.*;
 import java.net.*;
 
 /**
- * HttpServerSession class
- * 
  * This class is a thread that will handle the http request and send the
  * response
+ * 
+ * @see java.io
+ * @see java.net
+ * @version 1.0
+ * @author YelloElefant
  */
 public class HttpServerSession extends Thread {
     private Socket socket;
 
+    /**
+     * Constructor for HttpServerSession
+     * this sets the context for the thread
+     * 
+     * @param socket socket for connection to client (http request)
+     */
     public HttpServerSession(Socket socket) {
         this.socket = socket;
     }
