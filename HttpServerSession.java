@@ -15,6 +15,8 @@ import java.util.*;
  */
 public class HttpServerSession extends Thread {
     private Socket socket;
+    private PrintStream out;
+    private BufferedReader in;
     private List<String> requestHeaders = new ArrayList<String>();
 
     /**
@@ -36,8 +38,8 @@ public class HttpServerSession extends Thread {
     public void run() {
         try {
             // create input and output streams
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintStream out = new PrintStream(socket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintStream(socket.getOutputStream());
             String responseCode = "200 OK";
 
             // read http request headers
@@ -51,10 +53,7 @@ public class HttpServerSession extends Thread {
             String[] request = requestHeaders.get(0).split(" ");
             // String method = request[0];
             String fileRequested = request[1];
-            // get file extension from fileRequested
-            String fileExtension = fileRequested.substring(fileRequested.lastIndexOf(".") + 1);
-            // get content type
-            String contentType = getContentType(fileExtension);
+
             // get host request
             String host = requestHeaders.get(1).split(" ")[1].split(":")[0];
             // get client ip address
@@ -71,6 +70,11 @@ public class HttpServerSession extends Thread {
             }
             System.out.println(getParameters);
 
+            // get file extension from fileRequested
+            String fileExtension = fileRequested.substring(fileRequested.lastIndexOf(".") + 1);
+            // get content type
+            String contentType = getContentType(fileExtension);
+
             // check for specific files and re direct fileRequested
             if (fileRequested.equals("/")) {
                 fileRequested = "/index.html";
@@ -79,48 +83,29 @@ public class HttpServerSession extends Thread {
                 fileRequested = "/picture.jpg";
             }
 
-            // check for php file
-            if (fileExtension.equals("php")) {
-                String param = getParameters;
-                String scriptName = host + fileRequested;
-                String phpOutput = execPHP(scriptName, param);
-                out.println("HTTP/1.1 200 OK");
-                out.println("Content-Type: text/html");
-                out.println("Content-Length: " + phpOutput.length());
-                out.println("Server: YelloElefant-HttpServer");
-                out.println();
-                out.println(phpOutput);
-                out.flush();
-                System.out
-                        .println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
-                                + responseCode);
-                return;
-            }
-
             // set up file input stream
             File file = new File(host + fileRequested);
             FileInputStream fis = null;
             byte[] data = new byte[(int) file.length()];
 
-            // read in file and change response code if error
-            try {
-                fis = new FileInputStream(file);
-                fis.read(data);
-                fis.close();
-            } catch (FileNotFoundException e) {
-                responseCode = "404 Not Found";
+            // check for php file
+            if (fileExtension.equals("php")) {
+                String param = getParameters;
+                String scriptName = host + fileRequested;
+                data = execPHP(scriptName, param).getBytes();
+            } else {
+                // read in file and change response code if error
+                try {
+                    fis = new FileInputStream(file);
+                    fis.read(data);
+                    fis.close();
+                } catch (FileNotFoundException e) {
+                    responseCode = "404 Not Found";
+                }
             }
 
-            // send http headers
-            out.println("HTTP/1.1 " + responseCode);
-            out.println("Content-Type: " + contentType);
-            out.println("Content-Length: " + data.length);
-            out.println("Server: YelloElefant-HttpServer");
-            out.println();
-
-            // send http body
-            out.write(data);
-            out.flush();
+            // send response
+            respond(responseCode, contentType, data);
             // print request to console
 
             System.out
@@ -189,7 +174,7 @@ public class HttpServerSession extends Thread {
         }
     }
 
-    public String execPHP(String scriptName, String param) {
+    private String execPHP(String scriptName, String param) {
         StringBuilder output = new StringBuilder(); // Declare and initialize the output variable
         try {
             String line;
@@ -205,4 +190,19 @@ public class HttpServerSession extends Thread {
         }
         return output.toString();
     }
+
+    private void respond(String responseCode, String contentType, byte[] data) {
+        try {
+            out.println("HTTP/1.1 " + responseCode);
+            out.println("Content-Type: " + contentType);
+            out.println("Content-Length: " + data.length);
+            out.println("Server: YelloElefant-HttpServer");
+            out.println();
+            out.write(data);
+            out.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
