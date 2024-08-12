@@ -2,6 +2,7 @@
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 /**
  * This class is a thread that will handle the http request and send the
@@ -14,6 +15,7 @@ import java.net.*;
  */
 public class HttpServerSession extends Thread {
     private Socket socket;
+    private List<String> requestHeaders = new ArrayList<String>();
 
     /**
      * Constructor for HttpServerSession
@@ -38,16 +40,23 @@ public class HttpServerSession extends Thread {
             PrintStream out = new PrintStream(socket.getOutputStream());
             String responseCode = "200 OK";
 
-            // read http request
+            // read http request headers
             String line = in.readLine();
-            String[] request = line.split(" ");
+            while (line != null && !line.isEmpty()) {
+                requestHeaders.add(line);
+                line = in.readLine();
+            }
+
+            // read http request
+            String[] request = requestHeaders.get(0).split(" ");
             // String method = request[0];
             String fileRequested = request[1];
-
+            // get file extension from fileRequested
+            String fileExtension = fileRequested.substring(fileRequested.lastIndexOf(".") + 1);
+            // get content type
+            String contentType = getContentType(fileExtension);
             // get host request
-            line = in.readLine();
-            String host = line.split(" ")[1].split(":")[0];
-
+            String host = requestHeaders.get(1).split(" ")[1].split(":")[0];
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
 
@@ -58,12 +67,6 @@ public class HttpServerSession extends Thread {
                 host = ".";
                 fileRequested = "/picture.jpg";
             }
-
-            // get file extension from fileRequested
-            String fileExtension = fileRequested.substring(fileRequested.lastIndexOf(".") + 1);
-
-            // get content type
-            String contentType = getContentType(fileExtension);
 
             // set up file input stream
             File file = new File(host + fileRequested);
@@ -89,12 +92,14 @@ public class HttpServerSession extends Thread {
             // send http body
             out.write(data);
             out.flush();
+            // print request to console
 
             socket.close();
 
-            // print request to console
-            System.out.println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
-                    + responseCode);
+            System.out
+                    .println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
+                            + responseCode);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
