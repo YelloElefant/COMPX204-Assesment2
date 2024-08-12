@@ -15,16 +15,21 @@ import java.net.*;
  * @author YelloElefant
  */
 public class HttpServer {
+    private int port;
+
     /**
      * Main method for http server
      * 
      * @param args command line arguments
      */
     public static void main(String[] args) {
+        // get the port from environment variable if available if not use 8080
+        int port = System.getenv("PORT") != null ? Integer.parseInt(System.getenv("PORT")) : 8080;
+
         try {
             // create server socket on port 8080
-            ServerSocket server = new ServerSocket(8080);
-            System.out.println("Listening for connection on port 8080 ....");
+            ServerSocket server = new ServerSocket(port);
+            System.out.println("Listening for connection on port " + port + " ....");
 
             // listen for connection and create a new thread for each connection (accept all
             // connections)
