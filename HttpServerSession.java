@@ -79,6 +79,24 @@ public class HttpServerSession extends Thread {
                 fileRequested = "/picture.jpg";
             }
 
+            // check for php file
+            if (fileExtension.equals("php")) {
+                String param = getParameters;
+                String scriptName = host + fileRequested;
+                String phpOutput = execPHP(scriptName, param);
+                out.println("HTTP/1.1 200 OK");
+                out.println("Content-Type: text/html");
+                out.println("Content-Length: " + phpOutput.length());
+                out.println("Server: YelloElefant-HttpServer");
+                out.println();
+                out.println(phpOutput);
+                out.flush();
+                System.out
+                        .println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
+                                + responseCode);
+                return;
+            }
+
             // set up file input stream
             File file = new File(host + fileRequested);
             FileInputStream fis = null;
@@ -136,6 +154,13 @@ public class HttpServerSession extends Thread {
             case "jpeg" -> "image/jpeg";
             case "gif" -> "image/gif";
             case "ico" -> "image/x-icon";
+            case "json" -> "application/json";
+            case "pdf" -> "application/pdf";
+            case "xml" -> "application/xml";
+            case "zip" -> "application/zip";
+            case "mp3" -> "audio/mpeg";
+            case "mp4" -> "video/mp4";
+            case "php" -> "text/html";
             default -> "error";
         };
     }
@@ -162,5 +187,22 @@ public class HttpServerSession extends Thread {
         } catch (UnknownHostException e) {
             return ip;
         }
+    }
+
+    public String execPHP(String scriptName, String param) {
+        StringBuilder output = new StringBuilder(); // Declare and initialize the output variable
+        try {
+            String line;
+            ProcessBuilder processBuilder = new ProcessBuilder("php", scriptName, param);
+            Process p = processBuilder.start();
+            BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            while ((line = input.readLine()) != null) {
+                output.append(line);
+            }
+            input.close();
+        } catch (Exception err) {
+            err.printStackTrace();
+        }
+        return output.toString();
     }
 }
