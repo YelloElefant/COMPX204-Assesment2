@@ -60,6 +60,17 @@ public class HttpServerSession extends Thread {
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
 
+            // get get parameters
+            String getParameters = "";
+            if (fileRequested.contains("?")) {
+                getParameters = fileRequested.substring(fileRequested.indexOf("?") + 1);
+                fileRequested = fileRequested.substring(0, fileRequested.indexOf("?"));
+            }
+            if (getParameters.equals("")) {
+                getParameters = "none";
+            }
+            System.out.println(getParameters);
+
             // check for specific files and re direct fileRequested
             if (fileRequested.equals("/")) {
                 fileRequested = "/index.html";
@@ -94,14 +105,18 @@ public class HttpServerSession extends Thread {
             out.flush();
             // print request to console
 
-            socket.close();
-
             System.out
                     .println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
                             + responseCode);
 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
