@@ -14,9 +14,21 @@ import java.util.*;
  * @author YelloElefant
  */
 public class HttpServerSession extends Thread {
+    /**
+     * Socket for connection to client (http request)
+     */
     private Socket socket;
+    /**
+     * PrintStream for output to client
+     */
     private PrintStream out;
+    /**
+     * BufferedReader for input from client
+     */
     private BufferedReader in;
+    /**
+     * List of request headers
+     */
     private List<String> requestHeaders = new ArrayList<String>();
 
     /**
@@ -106,8 +118,8 @@ public class HttpServerSession extends Thread {
 
             // send response
             respond(responseCode, contentType, data);
-            // print request to console
 
+            // print request to console
             System.out
                     .println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
                             + responseCode);
@@ -174,6 +186,14 @@ public class HttpServerSession extends Thread {
         }
     }
 
+    /**
+     * Executes a php script
+     * using the php command line interface
+     * 
+     * @param scriptName php script name
+     * @param param      GET parameters
+     * @return output from php script
+     */
     private String execPHP(String scriptName, String param) {
         StringBuilder output = new StringBuilder(); // Declare and initialize the output variable
         try {
@@ -191,6 +211,13 @@ public class HttpServerSession extends Thread {
         return output.toString();
     }
 
+    /**
+     * Respond to http request
+     * 
+     * @param responseCode response code
+     * @param contentType  content type
+     * @param data         data to send
+     */
     private void respond(String responseCode, String contentType, byte[] data) {
         try {
             out.println("HTTP/1.1 " + responseCode);
