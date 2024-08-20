@@ -77,11 +77,12 @@ public class HttpServerSession extends Thread {
 
             // read in file and change response code if error
             try {
-                fis = new FileInputStream(file);
-                fis.read(data);
-                fis.close();
-            } catch (FileNotFoundException e) {
+                data = readFile(file);
+            } catch (Exception e) {
                 responseCode = "404 Not Found";
+                fileRequested = "/404.html";
+                file = new File(host + fileRequested);
+                data = readFile(file);
             }
 
             // respond to client
@@ -99,6 +100,14 @@ public class HttpServerSession extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    private byte[] readFile(File file) throws Exception {
+        byte[] data = new byte[(int) file.length()];
+        FileInputStream fis = new FileInputStream(file);
+        fis.read(data);
+        fis.close();
+        return data;
     }
 
     /**
@@ -180,4 +189,5 @@ public class HttpServerSession extends Thread {
 
         }
     }
+
 }
