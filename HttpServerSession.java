@@ -18,18 +18,10 @@ public class HttpServerSession extends Thread {
      * Socket for connection to client (http request)
      */
     private Socket socket;
-    /**
-     * PrintStream for output to client
-     */
     private PrintStream out;
-    /**
-     * BufferedReader for input from client
-     */
     private BufferedReader in;
-    /**
-     * List of request headers
-     */
-    private List<String> requestHeaders = new ArrayList<String>();
+
+    private Map<String, String> requestHeaders = new HashMap<String, String>();
 
     /**
      * Constructor for HttpServerSession
@@ -54,20 +46,16 @@ public class HttpServerSession extends Thread {
             out = new PrintStream(socket.getOutputStream());
             String responseCode = "200 OK";
 
-            // read http request headers
-            String line = in.readLine();
-            while (line != null && !line.isEmpty()) {
-                requestHeaders.add(line);
-                line = in.readLine();
-            }
+            // parse request headers
+            parseRequestHeaders();
 
-            // read http request
-            String[] request = requestHeaders.get(0).split(" ");
-            // String method = request[0];
-            String fileRequested = request[1];
+            // get file requested using the request map
+            String line = requestHeaders.get("METHOD");
+            String fileRequested = line.split(" ")[0];
 
             // get host request
-            String host = requestHeaders.get(1).split(" ")[1].split(":")[0];
+            String host = requestHeaders.get("Host").split(":")[0];
+
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
 
@@ -100,23 +88,17 @@ public class HttpServerSession extends Thread {
             FileInputStream fis = null;
             byte[] data = new byte[(int) file.length()];
 
-            // check for php file
-            if (fileExtension.equals("php")) {
-                String param = getParameters;
-                String scriptName = host + fileRequested;
-                data = execPHP(scriptName, param).getBytes();
-            } else {
-                // read in file and change response code if error
-                try {
-                    fis = new FileInputStream(file);
-                    fis.read(data);
-                    fis.close();
-                } catch (FileNotFoundException e) {
-                    responseCode = "404 Not Found";
-                }
+            // read in file and change response code if error
+            try {
+                data = readFile(file);
+            } catch (Exception e) {
+                responseCode = "404 Not Found";
+                fileRequested = "/404.html";
+                file = new File(host + fileRequested);
+                data = readFile(file);
             }
 
-            // send response
+            // respond to client
             respond(responseCode, contentType, data);
 
             // print request to console
@@ -133,6 +115,14 @@ public class HttpServerSession extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    private byte[] readFile(File file) throws Exception {
+        byte[] data = new byte[(int) file.length()];
+        FileInputStream fis = new FileInputStream(file);
+        fis.read(data);
+        fis.close();
+        return data;
     }
 
     /**
@@ -229,6 +219,28 @@ public class HttpServerSession extends Thread {
             out.flush();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void parseRequestHeaders() {
+        try {
+            String line;
+
+            while ((line = in.readLine()) != null) {
+                if (line.isEmpty()) {
+                    break;
+                }
+                if (line.contains("GET")) {
+                    requestHeaders.put("METHOD", line.split("GET")[1].trim());
+                    continue;
+                }
+
+                String[] header = line.split(": ");
+                requestHeaders.put(header[0], header[1]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
         }
     }
 
