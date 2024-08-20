@@ -2,6 +2,7 @@
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 /**
  * This class is a thread that will handle the http request and send the
@@ -14,6 +15,10 @@ import java.net.*;
  */
 public class HttpServerSession extends Thread {
     private Socket socket;
+    private PrintStream out;
+    private BufferedReader in;
+
+    private Map<String, String> requestHeaders = new HashMap<String, String>();
 
     /**
      * Constructor for HttpServerSession
@@ -34,19 +39,19 @@ public class HttpServerSession extends Thread {
     public void run() {
         try {
             // create input and output streams
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintStream out = new PrintStream(socket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintStream(socket.getOutputStream());
             String responseCode = "200 OK";
 
-            // read http request
-            String line = in.readLine();
-            String[] request = line.split(" ");
-            // String method = request[0];
-            String fileRequested = request[1];
+            // parse request headers
+            parseRequestHeaders();
+
+            // get file requested using the request map
+            String line = requestHeaders.get("METHOD");
+            String fileRequested = line.split(" ")[0];
 
             // get host request
-            line = in.readLine();
-            String host = line.split(" ")[1].split(":")[0];
+            String host = requestHeaders.get("Host").split(":")[0];
 
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
@@ -79,24 +84,20 @@ public class HttpServerSession extends Thread {
                 responseCode = "404 Not Found";
             }
 
-            // send http headers
-            out.println("HTTP/1.1 " + responseCode);
-            out.println("Content-Type: " + contentType);
-            out.println("Content-Length: " + data.length);
-            out.println("Server: YelloElefant-HttpServer");
-            out.println();
-
-            // send http body
-            out.write(data);
-            out.flush();
-
-            socket.close();
+            // respond to client
+            respond(responseCode, contentType, data);
 
             // print request to console
             System.out.println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
                     + responseCode);
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -141,6 +142,42 @@ public class HttpServerSession extends Thread {
             return inetAddress.getHostName().split("\\.")[0];
         } catch (UnknownHostException e) {
             return ip;
+        }
+    }
+
+    private void respond(String responseCode, String contentType, byte[] data) {
+        try {
+            out.println("HTTP/1.1 " + responseCode);
+            out.println("Content-Type: " + contentType);
+            out.println("Content-Length: " + data.length);
+            out.println("Server: YelloElefant-HttpServer");
+            out.println();
+            out.write(data);
+            out.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void parseRequestHeaders() {
+        try {
+            String line;
+
+            while ((line = in.readLine()) != null) {
+                if (line.isEmpty()) {
+                    break;
+                }
+                if (line.contains("GET")) {
+                    requestHeaders.put("METHOD", line.split("GET")[1].trim());
+                    continue;
+                }
+
+                String[] header = line.split(": ");
+                requestHeaders.put(header[0], header[1]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
         }
     }
 }
