@@ -88,14 +88,21 @@ public class HttpServerSession extends Thread {
             FileInputStream fis = null;
             byte[] data = new byte[(int) file.length()];
 
-            // read in file and change response code if error
-            try {
-                data = readFile(file);
-            } catch (Exception e) {
-                responseCode = "404 Not Found";
-                fileRequested = "/404.html";
-                file = new File(host + fileRequested);
-                data = readFile(file);
+            // check for php file
+            if (fileExtension.equals("php")) {
+                String param = getParameters;
+                String scriptName = host + fileRequested;
+                data = execPHP(scriptName, param).getBytes();
+            } else {
+                // read in file and change response code if error
+                try {
+                    data = readFile(file);
+                } catch (Exception e) {
+                    responseCode = "404 Not Found";
+                    fileRequested = "/404.html";
+                    file = new File(host + fileRequested);
+                    data = readFile(file);
+                }
             }
 
             // respond to client
