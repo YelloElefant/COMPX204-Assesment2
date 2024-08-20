@@ -35,6 +35,8 @@ public class HttpServer {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            System.out.println("Server shutting down ....");
         }
     }
 }
