@@ -120,6 +120,17 @@ public class HttpServer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            System.out.println("Log file exists .... " + logFile.getName());
+            System.out.println("Clearing log file .... " + logFile.getName());
+            // clear log file
+            try {
+                FileWriter writer = new FileWriter(logFile);
+                writer.write("");
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         System.out.println("Initialization complete ....");
