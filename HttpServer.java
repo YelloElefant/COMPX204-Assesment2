@@ -31,7 +31,7 @@ public class HttpServer {
 
             // create server socket on port 8080
             ServerSocket server = new ServerSocket(8080);
-            System.out.println("Listening for connection on port 8080 ....");
+            System.out.println("Listening for connections on port 8080 ....");
 
             // listen for connection and create a new thread for each connection (accept all
             // connections)
