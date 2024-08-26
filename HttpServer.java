@@ -17,6 +17,8 @@ import java.net.*;
 public class HttpServer {
     private int port;
 
+    public static String logFilePath = "logs/log.log";
+
     /**
      * Main method for http server
      * 
@@ -98,6 +100,25 @@ public class HttpServer {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+
+        // check for log file and create if not exists
+        System.out.println("Checking for log file .... " + logFilePath);
+        // check for log directioy
+        File logDir = new File(logFilePath.substring(0, logFilePath.lastIndexOf("/")));
+        if (!logDir.exists()) {
+            System.out.println("Creating log directory .... " + logDir.getName());
+            logDir.mkdir();
+        }
+
+        File logFile = new File(logFilePath);
+        if (!logFile.exists()) {
+            System.out.println("Creating log file .... " + logFile.getName());
+            try {
+                logFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
