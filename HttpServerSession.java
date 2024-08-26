@@ -43,15 +43,25 @@ public class HttpServerSession extends Thread {
             out = new PrintStream(socket.getOutputStream());
             String responseCode = "200 OK";
 
-            // parse request headers
-            parseRequestHeaders();
+            // // parse request headers
+            // parseRequestHeaders();
+            HttpServerRequest httpServerRequest = new HttpServerRequest();
+
+            do {
+                String line = in.readLine();
+                httpServerRequest.process(line);
+
+                if (line.isEmpty()) {
+                    break;
+                }
+                // System.out.println(line);
+            } while (httpServerRequest.isComplete() == false);
 
             // get file requested using the request map
-            String line = requestHeaders.get("METHOD");
-            String fileRequested = line.split(" ")[0];
+            String fileRequested = httpServerRequest.getPath();
 
             // get host request
-            String host = requestHeaders.get("Host").split(":")[0];
+            String host = httpServerRequest.getHost();
 
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
@@ -80,9 +90,10 @@ public class HttpServerSession extends Thread {
                 data = readFile(file);
             } catch (Exception e) {
                 responseCode = "404 Not Found";
-                fileRequested = "/404.html";
-                file = new File(host + fileRequested);
-                data = readFile(file);
+                // fileRequested = "/404.html";
+                // file = new File(host + fileRequested);
+                // data = readFile(file);
+                data = (fileRequested + " not found").getBytes();
             }
 
             // respond to client
