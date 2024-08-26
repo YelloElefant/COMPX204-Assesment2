@@ -250,6 +250,8 @@ public class HttpServerSession extends Thread {
             FileWriter fileWriter = new FileWriter(HttpServer.logFilePath, true);
             fileWriter.write(message + "\n");
             fileWriter.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
