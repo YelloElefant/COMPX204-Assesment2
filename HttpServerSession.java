@@ -114,9 +114,10 @@ public class HttpServerSession extends Thread {
             respond(responseCode, contentType, data);
 
             // print request to console
-            System.out
-                    .println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
-                            + responseCode);
+            String message = "Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
+                    + responseCode + " - " + new Date() + " - " + httpServerRequest.getMethod();
+            System.out.println(message + " - " + getParameters);
+            log(message);
 
         } catch (FileNotFoundException e) {
             try {
@@ -240,6 +241,16 @@ public class HttpServerSession extends Thread {
             out.write(data);
             out.flush();
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void log(String message) {
+        try {
+            FileWriter fileWriter = new FileWriter(HttpServer.logFilePath, true);
+            fileWriter.write(message + "\n");
+            fileWriter.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
