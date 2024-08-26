@@ -68,7 +68,6 @@ public class HttpServerSession extends Thread {
             if (getParameters.equals("")) {
                 getParameters = "none";
             }
-            System.out.println(getParameters);
 
             // get file extension from fileRequested
             String fileExtension = fileRequested.substring(fileRequested.lastIndexOf(".") + 1);
@@ -85,7 +84,6 @@ public class HttpServerSession extends Thread {
 
             // set up file input stream
             File file = new File(host + fileRequested);
-            FileInputStream fis = null;
             byte[] data = new byte[(int) file.length()];
 
             // check for php file
