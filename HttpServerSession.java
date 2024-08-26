@@ -20,6 +20,7 @@ public class HttpServerSession extends Thread {
     private Socket socket;
     private PrintStream out;
     private BufferedReader in;
+    private String host;
 
     private Map<String, String> requestHeaders = new HashMap<String, String>();
 
@@ -64,7 +65,7 @@ public class HttpServerSession extends Thread {
             String fileRequested = httpServerRequest.getPath();
 
             // get host request
-            String host = httpServerRequest.getHost();
+            host = httpServerRequest.getHost();
 
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
@@ -101,16 +102,12 @@ public class HttpServerSession extends Thread {
                 String param = getParameters;
                 String scriptName = host + fileRequested;
                 data = execPHP(scriptName, param).getBytes();
+                if (data.length == 0) {
+                    throw new FileNotFoundException();
+                }
             } else {
                 // read in file and change response code if error
-                try {
-                    data = readFile(file);
-                } catch (Exception e) {
-                    responseCode = "404 Not Found";
-                    fileRequested = "/404.html";
-                    file = new File(host + fileRequested);
-                    data = readFile(file);
-                }
+                data = readFile(file);
             }
 
             // respond to client
@@ -121,6 +118,16 @@ public class HttpServerSession extends Thread {
                     .println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
                             + responseCode);
 
+        } catch (FileNotFoundException e) {
+            try {
+                File file = new File(host + "/404.html");
+                byte[] data = readFile(file);
+                respond("404 Not Found", "text/html", data);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -234,28 +241,6 @@ public class HttpServerSession extends Thread {
             out.flush();
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private void parseRequestHeaders() {
-        try {
-            String line;
-
-            while ((line = in.readLine()) != null) {
-                if (line.isEmpty()) {
-                    break;
-                }
-                if (line.contains("GET")) {
-                    requestHeaders.put("METHOD", line.split("GET")[1].trim());
-                    continue;
-                }
-
-                String[] header = line.split(": ");
-                requestHeaders.put(header[0], header[1]);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-
         }
     }
 
