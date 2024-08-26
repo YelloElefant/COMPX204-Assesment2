@@ -2,3 +2,4 @@
 *.bat
 JavaDoc/
 RequestHeaders
+./logs/
