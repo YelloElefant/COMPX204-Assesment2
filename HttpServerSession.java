@@ -92,7 +92,6 @@ public class HttpServerSession extends Thread {
 
             // set up file input stream
             File file = new File(host + fileRequested);
-            FileInputStream fis = null;
             byte[] data = new byte[(int) file.length()];
 
             // read in file and change response code if error
