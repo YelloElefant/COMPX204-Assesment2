@@ -3,6 +3,10 @@
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * this class handles the http requests, will parse them into fields and has
+ * getters for common headers used
+ */
 public class HttpServerRequest {
    /**
     * the method of the request
