@@ -9,7 +9,7 @@ public class HttpServerRequest {
    private int check = 0;
 
    public void process(String request) {
-      if (request.equals("") || request == null) {
+      if (request == null || request.equals("")) {
          return;
       }
       if (request.contains("GET")) {
