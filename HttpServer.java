@@ -28,8 +28,12 @@ public class HttpServer {
     private static String hostIp = "";
 
     /**
-     * Main method for http server
+     * Main method for http server it binds the listening socket to the host,
+     * accepts all incoming connections on the relitive socket
+     * when it accepts a connection it starts a new HttpServerSession thread to
+     * handle it
      * 
+     * @see HttpServerSession
      * @param args command line arguments
      */
     public static void main(String[] args) {
