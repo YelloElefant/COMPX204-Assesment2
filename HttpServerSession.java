@@ -14,11 +14,20 @@ import java.util.*;
  * @author YelloElefant
  */
 public class HttpServerSession extends Thread {
+    /**
+     * the socket that is for this thread to handle
+     */
     private Socket socket;
-    private PrintStream out;
-    private BufferedReader in;
 
-    private Map<String, String> requestHeaders = new HashMap<String, String>();
+    /**
+     * the out stream for the socket
+     */
+    private PrintStream out;
+
+    /**
+     * the out stream for the socket
+     */
+    private BufferedReader in;
 
     /**
      * Constructor for HttpServerSession
@@ -176,28 +185,6 @@ public class HttpServerSession extends Thread {
             out.flush();
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private void parseRequestHeaders() {
-        try {
-            String line;
-
-            while ((line = in.readLine()) != null) {
-                if (line.isEmpty()) {
-                    break;
-                }
-                if (line.contains("GET")) {
-                    requestHeaders.put("METHOD", line.split("GET")[1].trim());
-                    continue;
-                }
-
-                String[] header = line.split(": ");
-                requestHeaders.put(header[0], header[1]);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-
         }
     }
 

@@ -9,6 +9,9 @@ public class HttpServerRequest {
    private int check = 0;
 
    public void process(String request) {
+      if (request.equals("")) {
+         return;
+      }
       if (request.contains("GET")) {
          String[] lineSplit = request.split(" ");
          this.method = lineSplit[0];
