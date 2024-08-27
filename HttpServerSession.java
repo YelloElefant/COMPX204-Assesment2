@@ -201,9 +201,9 @@ public class HttpServerSession extends Thread {
      * with a response code, content type, and some data
      * the method can be called multiple times at any point
      * 
-     * @param responseCode
-     * @param contentType
-     * @param data
+     * @param responseCode the response code to send to the client
+     * @param contentType  the content type to send to the client
+     * @param data         data to send to client
      */
     private void respond(String responseCode, String contentType, byte[] data) {
         try {
