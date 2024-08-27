@@ -29,6 +29,8 @@ public class HttpServerSession extends Thread {
      */
     private BufferedReader in;
 
+    private String host;
+
     /**
      * Constructor for HttpServerSession
      * this sets the context for the thread
@@ -52,8 +54,7 @@ public class HttpServerSession extends Thread {
             out = new PrintStream(socket.getOutputStream());
             String responseCode = "200 OK";
 
-            // // parse request headers
-            // parseRequestHeaders();
+            // parse request headers
             HttpServerRequest httpServerRequest = new HttpServerRequest();
 
             do {
@@ -70,7 +71,7 @@ public class HttpServerSession extends Thread {
             String fileRequested = httpServerRequest.getPath();
 
             // get host request
-            String host = httpServerRequest.getHost();
+            host = httpServerRequest.getHost();
 
             // get client ip address
             String clientIpAddress = socket.getInetAddress().getHostAddress();
@@ -99,10 +100,7 @@ public class HttpServerSession extends Thread {
                 data = readFile(file);
             } catch (Exception e) {
                 responseCode = "404 Not Found";
-                // fileRequested = "/404.html";
-                // file = new File(host + fileRequested);
-                // data = readFile(file);
-                data = (fileRequested + " not found").getBytes();
+                throw new FileNotFoundException(fileRequested + " not found");
             }
 
             // respond to client
@@ -111,6 +109,13 @@ public class HttpServerSession extends Thread {
             // print request to console
             System.out.println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
                     + responseCode);
+        } catch (FileNotFoundException e) {
+            try {
+                byte[] data = e.getMessage().getBytes();
+                respond("404 Not Found", "text/html", data);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
