@@ -15,17 +15,25 @@ import java.net.*;
  * @author YelloElefant
  */
 public class HttpServer {
+
+    /**
+     * the host name of the host
+     */
+    private static String hostName = "";
+
+    /**
+     * the ip of the host
+     */
+    private static String hostIp = "";
+
     /**
      * Main method for http server
      * 
      * @param args command line arguments
      */
-
-    private static String hostName = "";
-    private static String hostIp = "";
-
     public static void main(String[] args) {
         try {
+            // initializes the webserver
             System.out.println("Initializing server ....");
             initialize();
 
@@ -48,7 +56,13 @@ public class HttpServer {
 
     }
 
+    /**
+     * this method ititalizes the webserver
+     * it sets default folders for loopback, localhost, private ip, and host name
+     * and makes a index file in each folder with the folders name as content
+     */
     private static void initialize() {
+        // gets infomation of the host
         try {
             InetAddress host = InetAddress.getLocalHost();
             hostIp = host.toString().split("/")[1];
@@ -59,12 +73,15 @@ public class HttpServer {
             e.printStackTrace();
         }
 
+        // makes the list of files to check there exsistance
         File[] folders = new File[] { new File("127.0.0.1"), new File("localhost"), new File(hostName),
                 new File(hostIp) };
 
         System.out.println("Checking for folders ....");
 
+        // runs for each file in the list
         for (File folder : folders) {
+            // checks if it exisits
             if (!folder.exists()) {
                 System.out.println("Creating folder: " + folder.getName());
                 folder.mkdir();

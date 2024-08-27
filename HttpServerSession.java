@@ -29,6 +29,9 @@ public class HttpServerSession extends Thread {
      */
     private BufferedReader in;
 
+    /**
+     * the host the client is trying to reach, used for virtual hosting
+     */
     private String host;
 
     /**
@@ -99,6 +102,8 @@ public class HttpServerSession extends Thread {
                 data = readFile(file);
             } catch (Exception e) {
                 responseCode = "404 Not Found";
+                // throw a fileNotFoundException message is the data that needs to be sent to
+                // the client
                 throw new FileNotFoundException(fileRequested + " not found");
             }
 
@@ -109,6 +114,7 @@ public class HttpServerSession extends Thread {
             System.out.println("Request from " + getHostName(clientIpAddress) + " for " + host + fileRequested + " - "
                     + responseCode);
         } catch (FileNotFoundException e) {
+            // response to client with a 404 error and the custom 404 webpage
             try {
                 byte[] data = e.getMessage().getBytes();
                 respond("404 Not Found", "text/html", data);
@@ -118,6 +124,7 @@ public class HttpServerSession extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            // all threads must finally close the conection to the client
             try {
                 socket.close();
             } catch (IOException e) {
@@ -126,6 +133,15 @@ public class HttpServerSession extends Thread {
         }
     }
 
+    /**
+     * this method reads all data in from a specified file and returns it as a btye
+     * array
+     * 
+     * @param file the file to read
+     * @return a byte array of the contents of the file
+     * @throws Exception throws a FileNotFoundException, SecurityException,
+     *                   IOException
+     */
     private byte[] readFile(File file) throws Exception {
         byte[] data = new byte[(int) file.length()];
         FileInputStream fis = new FileInputStream(file);
@@ -141,6 +157,7 @@ public class HttpServerSession extends Thread {
      * @return content type
      */
     private String getContentType(String fileExtension) {
+        // uses a switch case to set content type based on extension
         return switch (fileExtension) {
             case "html" -> "text/html";
             case "css" -> "text/css";
@@ -178,8 +195,18 @@ public class HttpServerSession extends Thread {
         }
     }
 
+    /**
+     * the is method is the global respond method, it will respond to the client
+     * with a response code, content type, and some data
+     * the method can be called multiple times at any point
+     * 
+     * @param responseCode
+     * @param contentType
+     * @param data
+     */
     private void respond(String responseCode, String contentType, byte[] data) {
         try {
+            // writes bytes to the output stream
             out.println("HTTP/1.1 " + responseCode);
             out.println("Content-Type: " + contentType);
             out.println("Content-Length: " + data.length);
