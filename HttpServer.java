@@ -117,7 +117,7 @@ public class HttpServer {
                 }
             }
         }
-
+        System.out.println("All folders accounted for ....");
         System.out.println("Initialization complete ....");
     }
 }
