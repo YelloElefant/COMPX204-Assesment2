@@ -65,7 +65,7 @@ public class HttpServerSession extends Thread {
                 String line = in.readLine();
                 httpServerRequest.process(line);
 
-                if (line.isEmpty()) {
+                if (line == null || line.isEmpty()) {
                     break;
                 }
                 // System.out.println(line);
