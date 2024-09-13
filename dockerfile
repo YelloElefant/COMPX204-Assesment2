@@ -3,4 +3,6 @@ RUN apt-get update -y
 COPY ./*.class /webServer
 WORKDIR /webServer
 RUN apt install default-jre -y
-CMD ["java", "-cp", "/webServer", "HttpServer"]
+RUN cd /webServer
+RUN ls 
+CMD ["java", "HttpServer"]
