@@ -1,4 +1,5 @@
 FROM ubuntu
+EXPOSE 80
 RUN apt-get update -y
 RUN mkdir /webServer
 COPY ./*.class /webServer
