@@ -59,7 +59,7 @@ public class HttpServer {
         try {
             String overRideHostIp = System.getenv("HOST");
             InetAddress host = InetAddress.getLocalHost();
-            hostIp = overRideHostIp != null ? host.toString().split("/")[1] : overRideHostIp;
+            hostIp = overRideHostIp == null ? host.toString().split("/")[1] : overRideHostIp;
             System.out.println("Host IP: " + hostIp);
             hostName = host.getHostName();
             System.out.println("Host Name: " + hostName);
