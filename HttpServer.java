@@ -57,7 +57,7 @@ public class HttpServer {
 
     private static void initialize() {
         try {
-            String overRideHostIp = System.getenv("HOST_IP");
+            String overRideHostIp = System.getenv("HOST");
             InetAddress host = InetAddress.getLocalHost();
             hostIp = overRideHostIp != null ? host.toString().split("/")[1] : overRideHostIp;
             System.out.println("Host IP: " + hostIp);
