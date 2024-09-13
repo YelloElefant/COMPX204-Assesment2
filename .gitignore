@@ -1,5 +1,2 @@
-*.class
-*.bat
-JavaDoc/
-RequestHeaders
-logs/
+*
+!*.java
